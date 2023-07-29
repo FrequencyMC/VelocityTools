@@ -33,7 +33,6 @@ import net.elytrium.fastprepare.PreparedPacket;
 import net.elytrium.fastprepare.PreparedPacketFactory;
 import net.elytrium.java.commons.mc.serialization.Serializer;
 import net.elytrium.java.commons.mc.serialization.Serializers;
-import net.elytrium.java.commons.updates.UpdatesChecker;
 import net.elytrium.velocitytools.commands.AlertCommand;
 import net.elytrium.velocitytools.commands.FindCommand;
 import net.elytrium.velocitytools.commands.HubCommand;
@@ -46,7 +45,6 @@ import net.elytrium.velocitytools.listeners.ProtocolBlockerJoinListener;
 import net.elytrium.velocitytools.listeners.ProtocolBlockerPingListener;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.ComponentSerializer;
-import org.bstats.velocity.Metrics;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.slf4j.Logger;
 
@@ -68,16 +66,14 @@ public class VelocityTools {
 
   private final ProxyServer server;
   private final Path dataDirectory;
-  private final Metrics.Factory metricsFactory;
   private final PreparedPacketFactory packetFactory;
 
   @Inject
-  public VelocityTools(ProxyServer server, @DataDirectory Path dataDirectory, Logger logger, Metrics.Factory metricsFactory) {
+  public VelocityTools(ProxyServer server, @DataDirectory Path dataDirectory, Logger logger) {
     setLogger(logger);
 
     this.server = server;
     this.dataDirectory = dataDirectory;
-    this.metricsFactory = metricsFactory;
 
     Settings.IMP.reload(new File(this.dataDirectory.toFile().getAbsoluteFile(), "config.yml"));
     this.packetFactory = new PreparedPacketFactory(
@@ -102,14 +98,6 @@ public class VelocityTools {
     this.reload();
 
     HooksInitializer.init(this.server);
-
-    if (!UpdatesChecker.checkVersionByURL("https://raw.githubusercontent.com/Elytrium/VelocityTools/master/VERSION", Settings.IMP.VERSION)) {
-      LOGGER.error("****************************************");
-      LOGGER.warn("The new VelocityTools update was found, please update.");
-      LOGGER.error("https://github.com/Elytrium/VelocityTools/releases/");
-      LOGGER.error("****************************************");
-    }
-    this.metricsFactory.make(this, 12708);
   }
 
   @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH", justification = "LEGACY_AMPERSAND can't be null in velocity.")
