@@ -107,6 +107,11 @@ public class VelocityToolsCommand implements SimpleCommand {
     }
   }
 
+  @Override
+  public boolean hasPermission(SimpleCommand.Invocation invocation) {
+    return invocation.source().hasPermission("velocitytools.admin");
+  }
+
   private enum Subcommand {
     RELOAD("Reload config.", (VelocityToolsCommand parent, CommandSource source, String[] args) -> {
       parent.plugin.reload();
