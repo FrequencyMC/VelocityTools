@@ -104,7 +104,7 @@ public class HostnamesManagerHandler {
     if ((this.blockLocal && (originalServerAddress.startsWith("127.") || originalServerAddress.equalsIgnoreCase("localhost")))
         || (WhitelistUtil.checkForWhitelist(this.whitelist, this.hostnames.stream().anyMatch(pattern -> pattern.matcher(serverAddress).matches()))
         && this.whitelistedIps.stream().noneMatch(pattern -> pattern.matcher(remoteAddress.getAddress().getHostAddress()).matches()))) {
-      this.debugInfo(log + " §c(blocked)", remoteAddress, originalServerAddress, true);
+      this.debugInfo(log + " (blocked)", remoteAddress, originalServerAddress, true);
       return true;
     } else {
       this.debugInfo(log, remoteAddress, originalServerAddress, false);
