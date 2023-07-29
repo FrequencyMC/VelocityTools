@@ -23,14 +23,11 @@ import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
-import com.velocitypowered.proxy.protocol.StateRegistry;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
-import net.elytrium.fastprepare.PreparedPacket;
-import net.elytrium.fastprepare.PreparedPacketFactory;
 import net.elytrium.java.commons.mc.serialization.Serializer;
 import net.elytrium.java.commons.mc.serialization.Serializers;
 import net.elytrium.velocitytools.commands.AlertCommand;
@@ -38,11 +35,6 @@ import net.elytrium.velocitytools.commands.FindCommand;
 import net.elytrium.velocitytools.commands.HubCommand;
 import net.elytrium.velocitytools.commands.SendCommand;
 import net.elytrium.velocitytools.commands.VelocityToolsCommand;
-import net.elytrium.velocitytools.hooks.HandshakeHook;
-import net.elytrium.velocitytools.hooks.HooksInitializer;
-import net.elytrium.velocitytools.listeners.BrandChangerPingListener;
-import net.elytrium.velocitytools.listeners.ProtocolBlockerJoinListener;
-import net.elytrium.velocitytools.listeners.ProtocolBlockerPingListener;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.ComponentSerializer;
 import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
@@ -66,7 +58,6 @@ public class VelocityTools {
 
   private final ProxyServer server;
   private final Path dataDirectory;
-  private final PreparedPacketFactory packetFactory;
 
   @Inject
   public VelocityTools(ProxyServer server, @DataDirectory Path dataDirectory, Logger logger) {
@@ -76,28 +67,11 @@ public class VelocityTools {
     this.dataDirectory = dataDirectory;
 
     Settings.IMP.reload(new File(this.dataDirectory.toFile().getAbsoluteFile(), "config.yml"));
-    this.packetFactory = new PreparedPacketFactory(
-        PreparedPacket::new,
-        StateRegistry.LOGIN,
-        false,
-        1,
-        1,
-        Settings.IMP.MAIN.SAVE_UNCOMPRESSED_PACKETS
-    );
-
-    try {
-      Class.forName("com.velocitypowered.proxy.connection.client.LoginInboundConnection");
-    } catch (ClassNotFoundException e) {
-      LOGGER.error("Please update your Velocity binary to 3.1.0+ version", e);
-      this.server.shutdown();
-    }
   }
 
   @Subscribe
   public void onProxyInitialization(ProxyInitializeEvent event) {
     this.reload();
-
-    HooksInitializer.init(this.server);
   }
 
   @SuppressFBWarnings(value = "NP_NULL_ON_SOME_PATH", justification = "LEGACY_AMPERSAND can't be null in velocity.")
@@ -138,20 +112,6 @@ public class VelocityTools {
     this.server.getCommandManager().register("velocitytools", new VelocityToolsCommand(this), "vtools");
 
     this.server.getEventManager().unregisterListeners(this);
-
-    if (Settings.IMP.TOOLS.BRAND_CHANGER.REWRITE_IN_PING) {
-      this.server.getEventManager().register(this, new BrandChangerPingListener());
-    }
-
-    if (Settings.IMP.TOOLS.PROTOCOL_BLOCKER.BLOCK_PING) {
-      this.server.getEventManager().register(this, new ProtocolBlockerPingListener());
-    }
-
-    if (Settings.IMP.TOOLS.PROTOCOL_BLOCKER.BLOCK_JOIN) {
-      this.server.getEventManager().register(this, new ProtocolBlockerJoinListener());
-    }
-
-    HandshakeHook.reload(this.packetFactory);
   }
 
 
